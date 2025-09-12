@@ -176,7 +176,7 @@ def answer_from_document(prompt_completo, api_key):
     if not api_key:
         return "Erro: Chave de API ausente."
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+    url = f"[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=){api_key}"
 
     payload = {
         "contents": [{"parts": [{"text": prompt_completo}]}]
@@ -188,6 +188,11 @@ def answer_from_document(prompt_completo, api_key):
         result = response.json()
         
         resposta = result.get("candidates", [])[0].get("content", {}).get("parts", [])[0].get("text", "Não foi possível gerar a resposta.")
+
+        # REMOVE A FORMATAÇÃO DE CÓDIGO DO RESULTADO DA API
+        # Isso garante que a resposta não seja exibida em uma caixa de código.
+        resposta = resposta.replace("```python", "").replace("```", "").strip()
+
         return resposta
     except requests.exceptions.HTTPError as http_err:
         return f"Erro na comunicação com a API: {http_err}"
