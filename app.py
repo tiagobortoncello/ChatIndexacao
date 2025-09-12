@@ -131,7 +131,8 @@ def answer_from_document(pergunta, api_key):
         3. Se a informação for encontrada, formate a resposta exatamente assim:
         
         Termos de indexação: [extraia os termos de indexação, separados por ponto e vírgula e um espaço]
-        [extraia a regra sobre resumo (se o resumo no documento for #, retorne 'Não precisa de resumo.'). Se não for, retorne 'Resumo: obrigatório.']
+        [se a regra sobre resumo no documento for #, retorne 'Não precisa de resumo.']
+        [se a regra sobre resumo for obrigatória, retorne 'Resumo: obrigatório. Exemplo: [extraia o exemplo do resumo do documento]']
         
         Fonte: seção [extraia o número da seção], página [extraia o número da página].
         
@@ -183,4 +184,3 @@ if st.button("Obter Resposta"):
             
             st.subheader("Resposta")
             st.markdown(f"<p style='text-align: justify;'>{resposta}</p>", unsafe_allow_html=True)
-
