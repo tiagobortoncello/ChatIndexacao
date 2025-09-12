@@ -64,7 +64,7 @@ def answer_from_document(pergunta, api_key):
     if not DOCUMENTO_CONTEUDO:
         return "Erro: Conteúdo do documento não pôde ser carregado."
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key={api_key}"
 
     prompt_completo = f"""
     Você é um assistente de IA. Sua única fonte de conhecimento é o documento fornecido.
@@ -120,3 +120,4 @@ if st.button("Obter Resposta"):
             st.subheader("Resposta")
 
             st.markdown(f"<p style='text-align: justify;'>{resposta}</p>", unsafe_allow_html=True)
+
