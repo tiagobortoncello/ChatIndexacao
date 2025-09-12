@@ -3,12 +3,14 @@ import requests
 import json
 import os
 import docx
-import fitz
+import fitz # PyMuPDF
 from io import BytesIO
+
+# Importações corrigidas e necessárias
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import GoogleGenerativeAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 # --- CONFIGURAÇÃO DA INTERFACE (Streamlit) ---
 st.set_page_config(page_title="Chatbot de Documento Fixo")
@@ -17,12 +19,28 @@ st.write("Selecione um assunto para iniciar a conversa.")
 
 # --- LISTA DE DOCUMENTOS PRÉ-DEFINIDOS ---
 DOCUMENTOS_PRE_CARREGADOS = {
+    "Manual de Indexação": "manual_indexacao.pdf",
+    "Regimento Interno da ALMG": "regimento.pdf",
     "Constituição Estadual": "constituicao.pdf",
-    # Adicione outros documentos aqui
+    # Adicione mais documentos aqui, seguindo o formato "Nome Exibido": "nome_do_arquivo.extensão"
 }
 
 # --- PROMPTS PERSONALIZADOS POR DOCUMENTO ---
 PROMPTS_POR_DOCUMENTO = {
+    "Manual de Indexação": """
+    Personalização da IA:
+    Você deve atuar como um bibliotecário da Assembleia Legislativa do Estado de Minas
+    Gerais, que tira dúvidas sobre como devem ser indexados os
+    documentos legislativos com base no documento Conhecimento Manual de
+    Indexação 4ª ed.-2023.docx.
+    ... [restante do seu prompt]
+    """,
+    "Regimento Interno da ALMG": """
+    Personalização da IA:
+    Você é um assistente especializado no Regimento Interno da Assembleia Legislativa de Minas Gerais.
+    Sua única fonte de informação são os trechos do documento fornecidos.
+    ... [restante do seu prompt]
+    """,
     "Constituição Estadual": """
     Personalização da IA:
     Você é um assistente especializado na Constituição do Estado de Minas Gerais.
@@ -33,7 +51,7 @@ PROMPTS_POR_DOCUMENTO = {
     Regras de Resposta:
     - Responda de forma objetiva, formal e clara.
     - Se a informação não estiver nos trechos do documento, responda: "A informação não foi encontrada nos trechos do documento."
-    - Para cada resposta, forneça uma explicação detalhada. Sempre que possível, cite os artigos, parágrafos e incisos relevantes da Constituição.
+    - Para cada resposta, forneça uma explicação detalhada, destrinchando o processo e as regras relacionadas. Sempre que possível, cite os artigos, parágrafos e incisos relevantes da Constituição.
     - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada, no seguinte formato: "Você pode verificar a informação na página [cite a página] da Constituição Estadual."
 
     ---
@@ -42,19 +60,29 @@ PROMPTS_POR_DOCUMENTO = {
     ---
     Pergunta: {pergunta_usuario}
     """,
+    # Adicione mais prompts personalizados aqui
 }
 
 def get_api_key():
+    """
+    Tenta obter a chave de API das variáveis de ambiente ou secrets do Streamlit.
+    """
     api_key = os.environ.get("GOOGLE_API_KEY") or st.secrets.get("GOOGLE_API_KEY")
     if not api_key:
-        st.error("Erro: A chave de API não foi configurada.")
+        st.error("Erro: A chave de API não foi configurada. Por favor, adicione 'GOOGLE_API_KEY' nos segredos do Streamlit ou nas variáveis de ambiente.")
         return None
     return api_key
 
+@st.cache_resource
 def create_vector_store(file_path):
     """
     Cria e retorna um vector store (ChromaDB) a partir do documento.
+    Utiliza cache para evitar recriação.
     """
+    api_key = get_api_key()
+    if not api_key:
+        return None
+        
     if not os.path.exists(file_path):
         st.error(f"Erro: O arquivo '{file_path}' não foi encontrado.")
         return None
@@ -69,7 +97,7 @@ def create_vector_store(file_path):
         chunks = text_splitter.split_documents(pages)
 
         # Cria os embeddings e o vector store
-        embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=get_api_key())
+        embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
         vector_store = Chroma.from_documents(chunks, embeddings_model)
         return vector_store
     except Exception as e:
@@ -123,12 +151,14 @@ else:
         st.error("Erro: Não foi encontrado um prompt personalizado para este documento.")
         prompt_base = "Responda a pergunta do usuário com base nos seguintes trechos do documento: {conteudo_do_documento}. Pergunta: {pergunta_usuario}"
     
+    # Cria o vector store e o armazena no estado da sessão
     if "vector_store" not in st.session_state or st.session_state.vector_store_name != selected_file_name_display:
-        st.session_state.vector_store_name = selected_file_name_display
-        st.session_state.vector_store = create_vector_store(selected_file_path)
-
+        with st.spinner(f"Carregando e processando '{selected_file_name_display}'..."):
+            st.session_state.vector_store = create_vector_store(selected_file_path)
+            st.session_state.vector_store_name = selected_file_name_display
+    
     if st.session_state.vector_store:
-        st.success(f"Documento '{selected_file_name_display}' carregado com sucesso!")
+        st.success(f"Documento '{selected_file_name_display}' pronto!")
         
         if "messages" not in st.session_state:
             st.session_state.messages = []
