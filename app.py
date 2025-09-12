@@ -59,7 +59,7 @@ PROMPTS_POR_DOCUMENTO = {
     Sempre que achar a
     resposta, você deve responder ao final da seguinte maneira:
     
-    "Você pode verificar a informação na página [cite a página] do/da Manual de Indexação."
+    "Você pode verificar a informação na página [cite a página] do Manual de Indexação."
     ==================================================================================
 
     Público-alvo: Os
@@ -88,7 +88,7 @@ PROMPTS_POR_DOCUMENTO = {
     - Responda de forma objetiva, formal e clara.
     - Se a informação não estiver no documento, responda: "A informação não foi encontrada no documento."
     - Para cada resposta, forneça uma explicação detalhada, destrinchando o processo e as regras relacionadas. Sempre que possível, cite os artigos, parágrafos e incisos relevantes do Regimento.
-    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] do/da Regimento Interno da ALMG."
+    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] do Regimento Interno da ALMG."
 
     ---
     Histórico da Conversa:
@@ -111,7 +111,7 @@ PROMPTS_POR_DOCUMENTO = {
     - Responda de forma objetiva, formal e clara.
     - Se a informação não estiver no documento, responda: "A informação não foi encontrada no documento."
     - Para cada resposta, forneça uma explicação detalhada, destrinchando o processo e as regras relacionadas. Sempre que possível, cite os artigos, parágrafos e incisos relevantes da Constituição.
-    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] do/da Constituição Estadual."
+    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] da Constituição Estadual."
 
     ---
     Histórico da Conversa:
@@ -194,15 +194,6 @@ def answer_from_document(prompt_completo, api_key):
     except Exception as e:
         return f"Ocorreu um erro: {e}"
 
-def formatar_resposta_final(resposta, nome_documento):
-    """
-    Formata a resposta substituindo "do/da" pelo artigo correto.
-    """
-    if "Constituição Estadual" in nome_documento:
-        return resposta.replace("do/da", "da")
-    else:
-        return resposta.replace("do/da", "do")
-
 # --- SELEÇÃO DE DOCUMENTO E INÍCIO DO CHAT ---
 
 file_names = list(DOCUMENTOS_PRE_CARREGADOS.keys())
@@ -246,14 +237,10 @@ else:
                             pergunta_usuario=pergunta_usuario
                         )
                         
-                        resposta_bruta = answer_from_document(prompt_completo, api_key)
-                        
-                        # AQUI ESTÁ A ALTERAÇÃO: formata a resposta antes de exibi-la
-                        resposta_formatada = formatar_resposta_final(resposta_bruta, selected_file_name_display)
-
-                        st.markdown(resposta_formatada)
-                    
-                        st.session_state.messages.append({"role": "assistant", "content": resposta_formatada})
+                        resposta = answer_from_document(prompt_completo, api_key)
+                        st.markdown(resposta)
+            
+                        st.session_state.messages.append({"role": "assistant", "content": resposta})
 
     if st.button("Limpar Chat"):
         st.session_state.messages = []
