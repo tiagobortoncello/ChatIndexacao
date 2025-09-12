@@ -194,6 +194,15 @@ def answer_from_document(prompt_completo, api_key):
     except Exception as e:
         return f"Ocorreu um erro: {e}"
 
+def formatar_resposta_final(resposta, nome_documento):
+    """
+    Formata a resposta substituindo "do/da" pelo artigo correto.
+    """
+    if "Constituição Estadual" in nome_documento:
+        return resposta.replace("do/da", "da")
+    else:
+        return resposta.replace("do/da", "do")
+
 # --- SELEÇÃO DE DOCUMENTO E INÍCIO DO CHAT ---
 
 file_names = list(DOCUMENTOS_PRE_CARREGADOS.keys())
@@ -237,10 +246,14 @@ else:
                             pergunta_usuario=pergunta_usuario
                         )
                         
-                        resposta = answer_from_document(prompt_completo, api_key)
-                        st.markdown(resposta)
-            
-                        st.session_state.messages.append({"role": "assistant", "content": resposta})
+                        resposta_bruta = answer_from_document(prompt_completo, api_key)
+                        
+                        # AQUI ESTÁ A ALTERAÇÃO: formata a resposta antes de exibi-la
+                        resposta_formatada = formatar_resposta_final(resposta_bruta, selected_file_name_display)
+
+                        st.markdown(resposta_formatada)
+                    
+                        st.session_state.messages.append({"role": "assistant", "content": resposta_formatada})
 
     if st.button("Limpar Chat"):
         st.session_state.messages = []
