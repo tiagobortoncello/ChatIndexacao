@@ -59,7 +59,7 @@ PROMPTS_POR_DOCUMENTO = {
     Sempre que achar a
     resposta, você deve responder ao final da seguinte maneira:
     
-    "Você pode verificar a informação na página [cite a página] do/da Manual de Indexação."
+    "Você pode verificar a informação na página [cite a página] do Manual de Indexação."
     ==================================================================================
 
     Público-alvo: Os
@@ -88,7 +88,7 @@ PROMPTS_POR_DOCUMENTO = {
     - Responda de forma objetiva, formal e clara.
     - Se a informação não estiver no documento, responda: "A informação não foi encontrada no documento."
     - Para cada resposta, forneça uma explicação detalhada, destrinchando o processo e as regras relacionadas. Sempre que possível, cite os artigos, parágrafos e incisos relevantes do Regimento.
-    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] do/da Regimento Interno da ALMG."
+    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] do Regimento Interno da ALMG."
 
     ---
     Histórico da Conversa:
@@ -111,7 +111,7 @@ PROMPTS_POR_DOCUMENTO = {
     - Responda de forma objetiva, formal e clara.
     - Se a informação não estiver no documento, responda: "A informação não foi encontrada no documento."
     - Para cada resposta, forneça uma explicação detalhada, destrinchando o processo e as regras relacionadas. Sempre que possível, cite os artigos, parágrafos e incisos relevantes da Constituição.
-    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] do/da Constituição Estadual."
+    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] da Constituição Estadual."
 
     ---
     Histórico da Conversa:
@@ -245,3 +245,4 @@ else:
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
+
