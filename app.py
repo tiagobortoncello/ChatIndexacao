@@ -6,15 +6,10 @@ import docx
 import fitz  # PyMuPDF
 
 # --- CONFIGURAÇÃO DO ARQUIVO ---
-# 1. SUBSTITUA PELO NOME DO SEU ARQUIVO DE CONSULTA
-# Certifique-se de que ele esteja na mesma pasta do seu script 'app.py'
 NOME_DO_ARQUIVO = "manual_indexacao.pdf" 
 # -----------------------------
 
 def carregar_documento(caminho_arquivo):
-    """
-    Carrega o conteúdo de um arquivo (.txt, .docx, .pdf) em uma string.
-    """
     extensao = os.path.splitext(caminho_arquivo)[1].lower()
     
     try:
@@ -41,23 +36,16 @@ def carregar_documento(caminho_arquivo):
         st.error(f"Ocorreu um erro ao ler o arquivo: {e}")
         return None
 
-# Carrega o documento fixo uma única vez no início
 DOCUMENTO_CONTEUDO = carregar_documento(NOME_DO_ARQUIVO)
 
 def get_api_key():
-    """
-    Tenta obter a chave de API das variáveis de ambiente ou secrets do Streamlit.
-    """
     api_key = os.environ.get("GOOGLE_API_KEY") or st.secrets.get("GOOGLE_API_KEY")
     if not api_key:
-        st.error("Erro: A chave de API não foi configurada. Por favor, adicione 'GOOGLE_API_KEY' nos segredos do Streamlit ou nas variáveis de ambiente.")
+        st.error("Erro: A chave de API não foi configurada.")
         return None
     return api_key
 
 def answer_from_document(pergunta, api_key):
-    """
-    Gera uma resposta para a pergunta usando apenas o conteúdo do documento lido.
-    """
     if not api_key:
         return "Erro: Chave de API ausente."
     if not DOCUMENTO_CONTEUDO:
@@ -71,13 +59,19 @@ def answer_from_document(pergunta, api_key):
     Se a resposta para a pergunta não estiver explicitamente no documento, diga que a informação não foi encontrada.
     Não use seu conhecimento prévio para responder.
 
-    Regra de Resposta para Indexação:
-    - Se a pergunta for sobre "como indexar", analise o texto do documento.
-    - Se o documento contiver informações de indexação com caminhos de thesaurus (ex: 'Thesaurus/Tema/...'), extraia apenas os termos finais.
-    - Se o termo for "Utilidade Pública", formate a resposta exatamente assim:
-        Utilidade Pública
-        (Município)
-    - Para outros termos de indexação, liste-os de forma simples e direta, um por linha.
+    Regras de Resposta para Indexação:
+    - Se a pergunta for sobre "como indexar um projeto de utilidade pública", siga o seguinte template exatamente.
+    - Busque no documento a informação sobre a "Utilidade Pública" e a sua fonte.
+    - Se a informação for encontrada, formate a resposta exatamente assim, sem nenhuma alteração ou adição:
+    
+    Para indexar projetos de utilidade pública, utilize o seguinte: 
+
+    Utilidade Pública
+    Município
+
+    Fonte: [cite a seção e página do documento, extraindo-as do texto]
+
+    - Se a informação sobre a indexação ou a fonte não for encontrada, responda que a informação não foi encontrada.
 
     ---
     Documento:
@@ -103,18 +97,15 @@ def answer_from_document(pergunta, api_key):
     except Exception as e:
         return f"Ocorreu um erro: {e}"
 
-# --- Configuração da Interface (Streamlit) ---
 st.set_page_config(page_title="Chatbot de Documento Fixo")
 st.title("Chatbot Baseado em Documento Fixo")
 st.write("Faça perguntas sobre o documento que está no código-fonte.")
 
-# Área para o usuário fazer a pergunta
 pergunta_usuario = st.text_input(
     "Faça sua pergunta:", 
-    placeholder="Ex: 'Quais os tipos de plano de assinatura?'"
+    placeholder="Ex: 'Como indexar um projeto de utilidade pública?'"
 )
 
-# Botão para enviar a pergunta e gerar a resposta
 if st.button("Obter Resposta"):
     if not pergunta_usuario:
         st.warning("Por favor, digite sua pergunta.")
@@ -126,4 +117,3 @@ if st.button("Obter Resposta"):
             
             st.subheader("Resposta")
             st.markdown(f"<p style='text-align: justify;'>{resposta}</p>", unsafe_allow_html=True)
-
