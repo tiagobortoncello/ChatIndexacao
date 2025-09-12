@@ -5,6 +5,7 @@ import os
 import docx
 import fitz # PyMuPDF
 from io import BytesIO
+import asyncio
 
 # Importações corrigidas e necessárias
 from langchain_community.document_loaders import PyMuPDFLoader
@@ -88,6 +89,14 @@ def create_vector_store(file_path):
         return None
 
     try:
+        # Garante que um event loop está em execução no thread atual
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+        # O restante do seu código para criar o vector store
         # Carrega o documento
         loader = PyMuPDFLoader(file_path)
         pages = loader.load()
