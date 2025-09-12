@@ -8,7 +8,7 @@ import fitz  # PyMuPDF
 # --- CONFIGURAÇÃO DO ARQUIVO ---
 # 1. SUBSTITUA PELO NOME DO SEU ARQUIVO DE CONSULTA
 # Certifique-se de que ele esteja na mesma pasta do seu script 'app.py'
-NOME_DO_ARQUIVO = "manual_indexacao.pdf" 
+NOME_DO_ARQUIVO = "seu_documento.txt" 
 # -----------------------------
 
 def carregar_documento(caminho_arquivo):
@@ -64,7 +64,8 @@ def answer_from_document(pergunta, api_key):
     if not DOCUMENTO_CONTEUDO:
         return "Erro: Conteúdo do documento não pôde ser carregado."
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key={api_key}"
+    # A URL foi atualizada para o modelo gemini-2.0-flash
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
 
     prompt_completo = f"""
     Você é um assistente de IA. Sua única fonte de conhecimento é o documento fornecido.
@@ -118,6 +119,4 @@ if st.button("Obter Resposta"):
                 resposta = answer_from_document(pergunta_usuario, api_key)
             
             st.subheader("Resposta")
-
             st.markdown(f"<p style='text-align: justify;'>{resposta}</p>", unsafe_allow_html=True)
-
