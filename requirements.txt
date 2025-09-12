@@ -1,8 +1,8 @@
 streamlit
 requests
-python-docx
 PyMuPDF
-langchain_community
+docx2python
+langchain
+langchain-community
+langchain-google-genai
 chromadb
-tiktoken
-
