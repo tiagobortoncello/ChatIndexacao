@@ -4,17 +4,138 @@ import json
 import os
 import docx
 import fitz  # PyMuPDF
+from io import BytesIO
 
-# --- CONFIGURAÇÃO DO ARQUIVO ---
-# 1. SUBSTITUA PELO NOME DO SEU ARQUIVO DE CONSULTA
-# Certifique-se de que ele esteja na mesma pasta do seu script 'app.py'
-NOME_DO_ARQUIVO = "manual_indexacao.pdf" 
-# -----------------------------
+# --- CONFIGURAÇÃO DA INTERFACE (Streamlit) ---
+st.set_page_config(page_title="Chatbot de Documento Fixo")
+st.title("Chatbot Baseado em Múltiplos Documentos")
+st.write("Selecione um documento para iniciar a conversa.")
 
-def carregar_documento(caminho_arquivo):
+# --- LISTA DE DOCUMENTOS PRÉ-DEFINIDOS ---
+DOCUMENTOS_PRE_CARREGADOS = {
+    "Manual de Indexação": "manual_indexacao.pdf",
+    "Regimento Interno da ALMG": "regimento.pdf",
+    "Constituição Estadual": "constituicao.pdf",
+    # Adicione mais documentos aqui, seguindo o formato "Nome Exibido": "nome_do_arquivo.extensão"
+}
+
+# --- PROMPTS PERSONALIZADOS POR DOCUMENTO ---
+PROMPTS_POR_DOCUMENTO = {
+    "Manual de Indexação": """
+    Personalização da IA:
+    Você deve atuar como um bibliotecário da Assembleia Legislativa do Estado de Minas
+    Gerais, que tira dúvidas sobre como devem ser indexados os
+    documentos legislativos com base no documento Conhecimento Manual de
+    Indexação 4ª ed.-2023.docx.
+
+    ====================================================================
+
+    Tarefa principal:
+    A partir do documento, você deve auxiliar o bibliotecário localizado as regras
+    de indexação e resumo dos documentos legislativos.
+
+    ====================================================================
+
+    Regras específicas:
+    
+    Não consulte nenhum
+    outro documento. 
+    
+    Se não entender a
+    pergunta ou não localizar a resposta, responda que não é possível
+    responder a solicitação, pois não está prevista no Manual de
+    Indexação.
+    
+    O documento está estruturado em seções. Os exemplos vêm dentro de
+    quadros. Você deve sugerir os termos de indexação conforme os
+    exemplos, usando somente os termos mais específicos.
+    
+    Você deve
+    apresentar somente os termos mais específicos da indexação. Se o campo resumo estiver
+    preenchido com #, significa que aquele tipo não precisa de resumo.
+    Caso ele esteja preenchido, você deve informar que ele deve ter
+    resumo e mostrar o exemplo do resumo.
+    
+    Sempre que achar a
+    resposta, você deve responder ao final da seguinte maneira:
+    
+    “Fonte: seção [cite a seção], página [cite a página]”
+    ==================================================================================
+
+    Público-alvo: Os
+    bibliotecários da Assembleia Legislativa do Estado de Minas Gerais,
+    que vão indexar os documentos legislativos, atribuindo indexação e
+    resumo.
+
+    ---
+    Histórico da Conversa:
+    {historico_da_conversa}
+    ---
+    Documento:
+    {conteudo_do_documento}
+    ---
+    Pergunta: {pergunta_usuario}
+    """,
+
+    "Regimento Interno da ALMG": """
+    Personalização da IA:
+    Você é um assistente especializado no Regimento Interno da Assembleia Legislativa de Minas Gerais.
+    Sua única fonte de informação é o documento "Regimento Interno da ALMG.pdf".
+
+    ====================================================================
+
+    Regras de Resposta:
+    - Responda de forma objetiva, formal e clara.
+    - Suas respostas devem ser curtas e diretas, sem divagações.
+    - Se a informação não estiver no documento, responda: "A informação não foi encontrada no documento."
+    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Fonte: página [cite a página]".
+
+    ---
+    Histórico da Conversa:
+    {historico_da_conversa}
+    ---
+    Documento:
+    {conteudo_do_documento}
+    ---
+    Pergunta: {pergunta_usuario}
+    """,
+
+    "Constituição Estadual": """
+    Personalização da IA:
+    Você é um assistente especializado na Constituição do Estado de Minas Gerais.
+    Sua única fonte de informação é o documento "Constituição Estadual.pdf".
+
+    ====================================================================
+
+    Regras de Resposta:
+    - Responda de forma objetiva, formal e clara.
+    - Suas respostas devem ser curtas e diretas, sem divagações.
+    - Se a informação não estiver no documento, responda: "A informação não foi encontrada no documento."
+    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Fonte: página [cite a página]".
+
+    ---
+    Histórico da Conversa:
+    {historico_da_conversa}
+    ---
+    Documento:
+    {conteudo_do_documento}
+    ---
+    Pergunta: {pergunta_usuario}
+    """,
+    
+    # Adicione mais prompts personalizados aqui, mapeando ao nome de cada documento.
+}
+
+# --- FUNÇÕES AUXILIARES ---
+
+def carregar_documento_do_disco(caminho_arquivo):
     """
-    Carrega o conteúdo de um arquivo (.txt, .docx, .pdf) em uma string.
+    Carrega o conteúdo de um arquivo do disco local (.txt, .docx, .pdf) em uma string.
     """
+    if not os.path.exists(caminho_arquivo):
+        st.error(f"Erro: O arquivo '{caminho_arquivo}' não foi encontrado.")
+        return None
+    
     extensao = os.path.splitext(caminho_arquivo)[1].lower()
     
     try:
@@ -34,15 +155,9 @@ def carregar_documento(caminho_arquivo):
         else:
             st.error(f"Erro: Formato de arquivo '{extensao}' não suportado.")
             return None
-    except FileNotFoundError:
-        st.error(f"Erro: O arquivo '{caminho_arquivo}' não foi encontrado.")
-        return None
     except Exception as e:
         st.error(f"Ocorreu um erro ao ler o arquivo: {e}")
         return None
-
-# Carrega o documento fixo uma única vez no início
-DOCUMENTO_CONTEUDO = carregar_documento(NOME_DO_ARQUIVO)
 
 def get_api_key():
     """
@@ -54,96 +169,14 @@ def get_api_key():
         return None
     return api_key
 
-def answer_from_document(pergunta, api_key):
+def answer_from_document(prompt_completo, api_key):
     """
-    Gera uma resposta para a pergunta usando apenas o conteúdo do documento lido.
+    Gera uma resposta para o prompt usando a API da Gemini.
     """
     if not api_key:
         return "Erro: Chave de API ausente."
-    if not DOCUMENTO_CONTEUDO:
-        return "Erro: Conteúdo do documento não pôde ser carregado."
-
+    
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-
-    prompt_completo = f"""
-    Personalização da IA:
-    Você deve atuar como um bibliotecário da Assembleia Legislativa do Estado de Minas
-    Gerais, que tira dúvidas sobre como devem ser indexados os
-    documentos legislativos com base no documento Conhecimento Manual de
-    Indexação 4ª ed.-2023.docx (manual de indexação da Assembleia
-    Legislativa do Estado de Minas Gerais.) 
-
-    ====================================================================
-
-    Tarefa principal:
-    A partir do
-    documento, você deve auxiliar o bibliotecário localizado as regras
-    de indexação e resumo dos documentos legislativos.
-
-    ====================================================================
-
-    Regras específicas:
-
-    Não consulte nenhum
-    outro documento. 
-
-    Se não entender a
-    pergunta ou não localizar a resposta, responda que não é possível
-    responder a solicitação, pois não está prevista no Manual de
-    Indexação.
-
-    O documento está estruturado em seções. Os exemplos vêm dentro de
-    quadros. Você deve sugerir os termos de indexação conforme os
-    exemplos, usando somente os termos mais específicos. Observe o
-    exemplo abaixo:
-
-    [AQUI VAI O EXEMPLO QUE VOCÊ FORNECEU, A SER ENCONTRADO NO DOCUMENTO]
-    [...exemplo...]
-
-    Você deve
-    apresentar somente os termos mais específicos da indexação, ou
-    seja, ICMS e Incidência Tributária. Se o campo resumo estiver
-    preenchido com #, significa que aquele tipo não precisa de resumo.
-    Caso ele esteja preenchido, você deve informar que ele deve ter
-    resumo e mostrar o exemplo do resumo.
-
-    Sempre que achar a
-    resposta, você deve responder ao final da seguinte maneira:
-
-    “Fonte: seção [cite a seção], página [cite a página]”
-    ==================================================================================
-
-    Público-alvo: Os
-    bibliotecários da Assembleia Legislativa do Estado de Minas Gerais,
-    que vão indexar os documentos legislativos, atribuindo indexação e
-    resumo.
-
-    ---
-    Documento:
-    {DOCUMENTO_CONTEUDO}
-    ---
-
-    Regras de Resposta para a Tarefa:
-    - Se a resposta para a pergunta **não estiver** no documento, responda de forma clara: "A informação não foi encontrada no documento."
-    - Para perguntas sobre como indexar, siga este procedimento:
-        1. Identifique o tipo de documento na pergunta (ex: decreto, mensagem, indicação).
-        2. Busque no documento a regra de indexação para esse tipo de documento, incluindo os termos, a necessidade de resumo e a fonte.
-        3. Se a informação for encontrada, formate a resposta exatamente assim:
-        
-        Termos de indexação: [extraia os termos de indexação, separados por ponto e vírgula e um espaço]
-        [se o resumo no documento for #, retorne 'Não precisa de resumo.']
-        [se o resumo for obrigatório, retorne 'Resumo: obrigatório. Exemplo: [extraia o exemplo do resumo do documento]']
-        
-        Fonte: seção [extraia o número da seção], página [extraia o número da página].
-        
-        4. O modelo deve extrair todas as informações diretamente do documento e preencher o template.
-
-    - Para outras perguntas, apresente a resposta de forma direta e concisa.
-
-    ---
-
-    Pergunta: {pergunta}
-    """
 
     payload = {
         "contents": [{"parts": [{"text": prompt_completo}]}]
@@ -161,26 +194,54 @@ def answer_from_document(pergunta, api_key):
     except Exception as e:
         return f"Ocorreu um erro: {e}"
 
-# --- Configuração da Interface (Streamlit) ---
-st.set_page_config(page_title="Chatbot de Documento Fixo")
-st.title("Chatbot Baseado em Documento Fixo")
-st.write("Faça perguntas sobre o documento que está no código-fonte.")
+# --- SELEÇÃO DE DOCUMENTO E INÍCIO DO CHAT ---
 
-# Área para o usuário fazer a pergunta
-pergunta_usuario = st.text_input(
-    "Faça sua pergunta:", 
-    placeholder="Ex: 'Quais os tipos de plano de assinatura?'"
-)
-
-# Botão para enviar a pergunta e gerar a resposta
-if st.button("Obter Resposta"):
-    if not pergunta_usuario:
-        st.warning("Por favor, digite sua pergunta.")
+file_names = list(DOCUMENTOS_PRE_CARREGADOS.keys())
+if not file_names:
+    st.warning("Nenhum documento pré-carregado. Por favor, adicione arquivos à lista `DOCUMENTOS_PRE_CARREGADOS` no código.")
+else:
+    selected_file_name_display = st.selectbox("Escolha o documento sobre o qual você quer conversar:", file_names)
+    selected_file_path = DOCUMENTOS_PRE_CARREGADOS[selected_file_name_display]
+    
+    if selected_file_name_display in PROMPTS_POR_DOCUMENTO:
+        prompt_base = PROMPTS_POR_DOCUMENTO[selected_file_name_display]
     else:
-        api_key = get_api_key()
-        if api_key:
-            with st.spinner("Buscando a resposta..."):
-                resposta = answer_from_document(pergunta_usuario, api_key)
+        st.error("Erro: Não foi encontrado um prompt personalizado para este documento. Usando prompt padrão.")
+        prompt_base = "Responda a pergunta do usuário com base no seguinte documento: {conteudo_do_documento}. Pergunta: {pergunta_usuario}"
+    
+    DOCUMENTO_CONTEUDO = carregar_documento_do_disco(selected_file_path)
+
+    if DOCUMENTO_CONTEUDO:
+        st.success(f"Documento '{selected_file_name_display}' carregado com sucesso!")
+        
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        if pergunta_usuario := st.chat_input("Faça sua pergunta:"):
+            st.session_state.messages.append({"role": "user", "content": pergunta_usuario})
             
-            st.subheader("Resposta")
-            st.markdown(f"<p style='text-align: justify;'>{resposta}</p>", unsafe_allow_html=True)
+            with st.chat_message("user"):
+                st.markdown(pergunta_usuario)
+
+            with st.chat_message("assistant"):
+                with st.spinner("Buscando a resposta..."):
+                    api_key = get_api_key()
+                    if api_key and DOCUMENTO_CONTEUDO:
+                        prompt_completo = prompt_base.format(
+                            historico_da_conversa=st.session_state.messages,
+                            conteudo_do_documento=DOCUMENTO_CONTEUDO,
+                            pergunta_usuario=pergunta_usuario
+                        )
+                        
+                        resposta = answer_from_document(prompt_completo, api_key)
+                        st.markdown(resposta)
+            
+                        st.session_state.messages.append({"role": "assistant", "content": resposta})
+
+    if st.button("Limpar Chat"):
+        st.session_state.messages = []
+        st.rerun()
