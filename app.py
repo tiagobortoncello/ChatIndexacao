@@ -8,8 +8,8 @@ from io import BytesIO
 
 # --- CONFIGURAÇÃO DA INTERFACE (Streamlit) ---
 st.set_page_config(page_title="Chatbot de Documento Fixo")
-st.title("Chatbot Baseado em Múltiplos Documentos")
-st.write("Selecione um documento para iniciar a conversa.")
+st.title("Chatbot – Gerência de Informação Legislativa")
+st.write("Selecione um assunto para iniciar a conversa.")
 
 # --- LISTA DE DOCUMENTOS PRÉ-DEFINIDOS ---
 DOCUMENTOS_PRE_CARREGADOS = {
@@ -245,3 +245,4 @@ else:
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
+
