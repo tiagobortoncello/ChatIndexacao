@@ -5,10 +5,11 @@ import os
 import docx
 import fitz # PyMuPDF
 from io import BytesIO
+from streamlit_extras.st_title import st_title
 
 # --- CONFIGURAÇÃO DA INTERFACE (Streamlit) ---
 st.set_page_config(page_title="Chatbot de Documento Fixo")
-st.title("Chatbot – Gerência de Informação Legislativa")
+st_title("Chatbot – Gerência de Informação Legislativa", centered=True)
 st.write("Selecione um assunto para iniciar a conversa.")
 
 # --- LISTA DE DOCUMENTOS PRÉ-DEFINIDOS ---
@@ -74,7 +75,7 @@ PROMPTS_POR_DOCUMENTO = {
     Documento:
     {conteudo_do_documento}
     ---
-    Pergunta: {pergunta_usuario}
+    Perguntat: {pergunta_usuario}
     """,
 
     "Regimento Interno da ALMG": """
@@ -245,5 +246,3 @@ else:
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
-
-
