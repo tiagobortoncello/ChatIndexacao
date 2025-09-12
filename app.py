@@ -8,7 +8,7 @@ import fitz  # PyMuPDF
 # --- CONFIGURAÇÃO DO ARQUIVO ---
 # 1. SUBSTITUA PELO NOME DO SEU ARQUIVO DE CONSULTA
 # Certifique-se de que ele esteja na mesma pasta do seu script 'app.py'
-NOME_DO_ARQUIVO = "manual_indexacao.pdf" 
+NOME_DO_ARQUIVO = "seu_documento.txt" 
 # -----------------------------
 
 def carregar_documento(caminho_arquivo):
@@ -44,7 +44,6 @@ def carregar_documento(caminho_arquivo):
 # Carrega o documento fixo uma única vez no início
 DOCUMENTO_CONTEUDO = carregar_documento(NOME_DO_ARQUIVO)
 
-# Função para obter a chave de API de forma segura
 def get_api_key():
     """
     Tenta obter a chave de API das variáveis de ambiente ou secrets do Streamlit.
@@ -64,14 +63,21 @@ def answer_from_document(pergunta, api_key):
     if not DOCUMENTO_CONTEUDO:
         return "Erro: Conteúdo do documento não pôde ser carregado."
 
-    # A URL foi atualizada para o modelo gemini-2.0-flash
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
 
     prompt_completo = f"""
-    Você é um assistente de IA. Sua única fonte de conhecimento é o documento fornecido.
-    Responda à pergunta do usuário **APENAS** usando as informações contidas no documento abaixo.
+    Você é um assistente de IA focado em responder perguntas sobre um documento específico.
+    Use EXCLUSIVAMENTE o texto a seguir para responder a pergunta.
     Se a resposta para a pergunta não estiver explicitamente no documento, diga que a informação não foi encontrada.
     Não use seu conhecimento prévio para responder.
+
+    Regra de Resposta para Indexação:
+    - Se a pergunta for sobre "como indexar", analise o texto do documento.
+    - Se o documento contiver informações de indexação com caminhos de thesaurus (ex: 'Thesaurus/Tema/...'), extraia apenas os termos finais.
+    - Se o termo for "Utilidade Pública", formate a resposta exatamente assim:
+        Utilidade Pública
+        (Município)
+    - Para outros termos de indexação, liste-os de forma simples e direta, um por linha.
 
     ---
     Documento:
@@ -120,4 +126,3 @@ if st.button("Obter Resposta"):
             
             st.subheader("Resposta")
             st.markdown(f"<p style='text-align: justify;'>{resposta}</p>", unsafe_allow_html=True)
-
