@@ -71,18 +71,16 @@ def answer_from_document(pergunta, api_key):
 
     **Regras de Resposta:**
     - Se a resposta para a pergunta **não estiver** no documento, responda de forma clara: "A informação não foi encontrada no documento."
-    - Para a pergunta "Como indexar uma mensagem do governador encaminhando uma indicação", siga o seguinte template exatamente.
-    - Busque no documento a informação sobre a indexação e a sua fonte (seção e página).
-    - Se a informação for encontrada, formate a resposta exatamente assim, sem nenhuma alteração ou adição:
+    - Para perguntas sobre como indexar, apresente a resposta no seguinte formato:
     
     Para indexar esse documento, utilize os termos:
-    Encaminhamento de proposição
-
-    O documento não precisa de resumo.
-
-    Fonte: seção [extraia o número da seção], página [extraia o número da página].
+    [termo de indexação]
+    [cite a regra de resumo ou a linha 'O documento não precisa de resumo']
     
-    - Para outras perguntas, apresente a resposta de forma direta e concisa.
+    Fonte: seção [cite a seção], página [cite a página].
+
+    - O modelo deve extrair o termo de indexação, a regra de resumo (ou a ausência dela), a seção e a página diretamente do documento.
+    - Para outras perguntas que não sejam sobre indexação, apresente a resposta de forma direta e concisa.
 
     ---
     Documento:
