@@ -2,4 +2,7 @@ streamlit
 requests
 python-docx
 PyMuPDF
+langchain_community
+chromadb
+tiktoken
 
