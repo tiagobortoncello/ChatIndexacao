@@ -200,7 +200,7 @@ file_names = list(DOCUMENTOS_PRE_CARREGADOS.keys())
 if not file_names:
     st.warning("Nenhum documento pré-carregado. Por favor, adicione arquivos à lista `DOCUMENTOS_PRE_CARREGADOS` no código.")
 else:
-    selected_file_name_display = st.selectbox("Escolha o documento sobre o qual você quer conversar:", file_names)
+    selected_file_name_display = st.selectbox("Escolha o assunto sobre o qual você quer conversar:", file_names)
     selected_file_path = DOCUMENTOS_PRE_CARREGADOS[selected_file_name_display]
     
     if selected_file_name_display in PROMPTS_POR_DOCUMENTO:
@@ -245,4 +245,5 @@ else:
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
+
 
