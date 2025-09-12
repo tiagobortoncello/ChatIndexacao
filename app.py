@@ -8,7 +8,7 @@ import fitz  # PyMuPDF
 # --- CONFIGURAÇÃO DO ARQUIVO ---
 # 1. SUBSTITUA PELO NOME DO SEU ARQUIVO DE CONSULTA
 # Certifique-se de que ele esteja na mesma pasta do seu script 'app.py'
-NOME_DO_ARQUIVO = "seu_documento.txt" 
+NOME_DO_ARQUIVO = "manual_indexacao.pdf" 
 # -----------------------------
 
 def carregar_documento(caminho_arquivo):
@@ -118,4 +118,5 @@ if st.button("Obter Resposta"):
                 resposta = answer_from_document(pergunta_usuario, api_key)
             
             st.subheader("Resposta")
+
             st.markdown(f"<p style='text-align: justify;'>{resposta}</p>", unsafe_allow_html=True)
