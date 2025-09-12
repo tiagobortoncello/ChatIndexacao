@@ -109,8 +109,8 @@ PROMPTS_POR_DOCUMENTO = {
 
     Regras de Resposta:
     - Responda de forma objetiva, formal e clara.
-    - Suas respostas devem ser curtas e diretas, sem divagações.
     - Se a informação não estiver no documento, responda: "A informação não foi encontrada no documento."
+    - Para cada resposta, forneça uma explicação detalhada, destrinchando o processo e as regras relacionadas. Sempre que possível, cite os artigos, parágrafos e incisos relevantes da Constituição.
     - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] do/da Constituição Estadual."
 
     ---
@@ -245,4 +245,3 @@ else:
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
-
