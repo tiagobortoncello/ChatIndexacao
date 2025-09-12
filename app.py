@@ -8,7 +8,7 @@ import fitz  # PyMuPDF
 # --- CONFIGURAÇÃO DO ARQUIVO ---
 # 1. SUBSTITUA PELO NOME DO SEU ARQUIVO DE CONSULTA
 # Certifique-se de que ele esteja na mesma pasta do seu script 'app.py'
-NOME_DO_ARQUIVO = "manual_indexacao.pdf" 
+NOME_DO_ARQUIVO = "seu_documento.txt" 
 # -----------------------------
 
 def carregar_documento(caminho_arquivo):
@@ -122,7 +122,25 @@ def answer_from_document(pergunta, api_key):
     Documento:
     {DOCUMENTO_CONTEUDO}
     ---
-    
+
+    Regras de Resposta para a Tarefa:
+    - Se a resposta para a pergunta **não estiver** no documento, responda de forma clara: "A informação não foi encontrada no documento."
+    - Para perguntas sobre como indexar, siga este procedimento:
+        1. Identifique o tipo de documento na pergunta (ex: decreto, mensagem, indicação).
+        2. Busque no documento a regra de indexação para esse tipo de documento, incluindo os termos, a necessidade de resumo e a fonte.
+        3. Se a informação for encontrada, formate a resposta exatamente assim:
+        
+        Termos de indexação: [extraia os termos de indexação, separados por ponto e vírgula e um espaço]
+        [extraia a regra sobre resumo (se o resumo no documento for #, retorne 'Não precisa de resumo.'). Se não for, retorne 'Resumo: obrigatório.']
+        
+        Fonte: seção [extraia o número da seção], página [extraia o número da página].
+        
+        4. O modelo deve extrair todas as informações diretamente do documento e preencher o template.
+
+    - Para outras perguntas, apresente a resposta de forma direta e concisa.
+
+    ---
+
     Pergunta: {pergunta}
     """
 
