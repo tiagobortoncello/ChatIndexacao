@@ -5,13 +5,6 @@ import os
 import docx
 import fitz # PyMuPDF
 from io import BytesIO
-import asyncio
-
-# Importações corrigidas e necessárias
-from langchain_community.document_loaders import PyMuPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 # --- CONFIGURAÇÃO DA INTERFACE (Streamlit) ---
 st.set_page_config(page_title="Chatbot de Documento Fixo")
@@ -34,35 +27,137 @@ PROMPTS_POR_DOCUMENTO = {
     Gerais, que tira dúvidas sobre como devem ser indexados os
     documentos legislativos com base no documento Conhecimento Manual de
     Indexação 4ª ed.-2023.docx.
-    ... [restante do seu prompt]
+
+    ====================================================================
+
+    Tarefa principal:
+    A partir do documento, você deve auxiliar o bibliotecário localizado as regras
+    de indexação e resumo dos documentos legislativos.
+
+    ====================================================================
+
+    Regras específicas:
+    
+    Não consulte nenhum
+    outro documento. 
+    
+    Se não entender a
+    pergunta ou não localizar a resposta, responda que não é possível
+    responder a solicitação, pois não está prevista no Manual de
+    Indexação.
+    
+    O documento está estruturado em seções. Os exemplos vêm dentro de
+    quadros. Você deve sugerir os termos de indexação conforme os
+    exemplos, usando somente os termos mais específicos.
+    
+    Você deve
+    apresentar somente os termos mais específicos da indexação. Se o campo resumo estiver
+    preenchido com #, significa que aquele tipo não precisa de resumo.
+    Caso ele esteja preenchido, você deve informar que ele deve ter
+    resumo e mostrar o exemplo do resumo.
+    
+    Sempre que achar a
+    resposta, você deve responder ao final da seguinte maneira:
+    
+    "Você pode verificar a informação na página [cite a página] do/da Manual de Indexação."
+    ==================================================================================
+
+    Público-alvo: Os
+    bibliotecários da Assembleia Legislativa do Estado de Minas Gerais,
+    que vão indexar os documentos legislativos, atribuindo indexação e
+    resumo.
+
+    ---
+    Histórico da Conversa:
+    {historico_da_conversa}
+    ---
+    Documento:
+    {conteudo_do_documento}
+    ---
+    Pergunta: {pergunta_usuario}
     """,
+
     "Regimento Interno da ALMG": """
     Personalização da IA:
     Você é um assistente especializado no Regimento Interno da Assembleia Legislativa de Minas Gerais.
-    Sua única fonte de informação são os trechos do documento fornecidos.
-    ... [restante do seu prompt]
-    """,
-    "Constituição Estadual": """
-    Personalização da IA:
-    Você é um assistente especializado na Constituição do Estado de Minas Gerais.
-    Sua única fonte de informação são os trechos do documento fornecidos.
+    Sua única fonte de informação é o documento "Regimento Interno da ALMG.pdf".
 
     ====================================================================
 
     Regras de Resposta:
     - Responda de forma objetiva, formal e clara.
-    - Se a informação não estiver nos trechos do documento, responda: "A informação não foi encontrada nos trechos do documento."
-    - Para cada resposta, forneça uma explicação detalhada, destrinchando o processo e as regras relacionadas. Sempre que possível, cite os artigos, parágrafos e incisos relevantes da Constituição.
-    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada, no seguinte formato: "Você pode verificar a informação na página [cite a página] da Constituição Estadual."
+    - Se a informação não estiver no documento, responda: "A informação não foi encontrada no documento."
+    - Para cada resposta, forneça uma explicação detalhada, destrinchando o processo e as regras relacionadas. Sempre que possível, cite os artigos, parágrafos e incisos relevantes do Regimento.
+    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] do/da Regimento Interno da ALMG."
 
     ---
-    Trechos do Documento:
+    Histórico da Conversa:
+    {historico_da_conversa}
+    ---
+    Documento:
     {conteudo_do_documento}
     ---
     Pergunta: {pergunta_usuario}
     """,
-    # Adicione mais prompts personalizados aqui
+
+    "Constituição Estadual": """
+    Personalização da IA:
+    Você é um assistente especializado na Constituição do Estado de Minas Gerais.
+    Sua única fonte de informação é o documento "Constituição Estadual.pdf".
+
+    ====================================================================
+
+    Regras de Resposta:
+    - Responda de forma objetiva, formal e clara.
+    - Se a informação não estiver no documento, responda: "A informação não foi encontrada no documento."
+    - Para cada resposta, forneça uma explicação detalhada, destrinchando o processo e as regras relacionadas. Sempre que possível, cite os artigos, parágrafos e incisos relevantes da Constituição.
+    - Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] do/da Constituição Estadual."
+
+    ---
+    Histórico da Conversa:
+    {historico_da_conversa}
+    ---
+    Documento:
+    {conteudo_do_documento}
+    ---
+    Pergunta: {pergunta_usuario}
+    """,
+    
+    # Adicione mais prompts personalizados aqui, mapeando ao nome de cada documento.
 }
+
+# --- FUNÇÕES AUXILIARES ---
+
+def carregar_documento_do_disco(caminho_arquivo):
+    """
+    Carrega o conteúdo de um arquivo do disco local (.txt, .docx, .pdf) em uma string.
+    """
+    if not os.path.exists(caminho_arquivo):
+        st.error(f"Erro: O arquivo '{caminho_arquivo}' não foi encontrado.")
+        return None
+    
+    extensao = os.path.splitext(caminho_arquivo)[1].lower()
+    
+    try:
+        if extensao == ".txt":
+            with open(caminho_arquivo, 'r', encoding='utf-8') as f:
+                return f.read()
+        elif extensao == ".docx":
+            doc = docx.Document(caminho_arquivo)
+            texto = [paragrafo.text for paragrafo in doc.paragraphs]
+            return "\n".join(texto)
+        elif extensao == ".pdf":
+            texto = ""
+            with fitz.open(caminho_arquivo) as pdf_doc:
+                for page in pdf_doc:
+                    texto += page.get_text()
+            return texto
+        else:
+            st.error(f"Erro: Formato de arquivo '{extensao}' não suportado.")
+            return None
+    except Exception as e:
+        st.error(f"Ocorreu um erro ao ler o arquivo: {e}")
+        return None
 
 def get_api_key():
     """
@@ -74,66 +169,20 @@ def get_api_key():
         return None
     return api_key
 
-@st.cache_resource
-def create_vector_store(file_path):
+def answer_from_document(prompt_completo, api_key):
     """
-    Cria e retorna um vector store (ChromaDB) a partir do documento.
-    Utiliza cache para evitar recriação.
+    Gera uma resposta para o prompt usando a API da Gemini.
     """
-    api_key = get_api_key()
     if not api_key:
-        return None
-        
-    if not os.path.exists(file_path):
-        st.error(f"Erro: O arquivo '{file_path}' não foi encontrado.")
-        return None
+        return "Erro: Chave de API ausente."
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+
+    payload = {
+        "contents": [{"parts": [{"text": prompt_completo}]}]
+    }
 
     try:
-        # Garante que um event loop está em execução no thread atual
-        try:
-            asyncio.get_running_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-        # O restante do seu código para criar o vector store
-        # Carrega o documento
-        loader = PyMuPDFLoader(file_path)
-        pages = loader.load()
-
-        # Divide o documento em chunks
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-        chunks = text_splitter.split_documents(pages)
-
-        # Cria os embeddings e o vector store
-        embeddings_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
-        vector_store = Chroma.from_documents(chunks, embeddings_model)
-        return vector_store
-    except Exception as e:
-        st.error(f"Ocorreu um erro ao criar o vector store: {e}")
-        return None
-
-def answer_from_document_rag(pergunta_usuario, vector_store, prompt_template, api_key):
-    """
-    Gera uma resposta usando a abordagem RAG.
-    """
-    if not api_key or not vector_store:
-        return "Erro: Chave de API ausente ou vector store não criado."
-
-    try:
-        # Busca os trechos mais relevantes do documento
-        relevant_docs = vector_store.similarity_search(pergunta_usuario, k=3)
-        relevant_text = "\n\n".join([doc.page_content for doc in relevant_docs])
-
-        # Cria o prompt com os trechos relevantes
-        prompt_completo = prompt_template.format(
-            conteudo_do_documento=relevant_text,
-            pergunta_usuario=pergunta_usuario
-        )
-
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
-        payload = {"contents": [{"parts": [{"text": prompt_completo}]}]}
-
         response = requests.post(url, json=payload)
         response.raise_for_status()
         result = response.json()
@@ -149,7 +198,7 @@ def answer_from_document_rag(pergunta_usuario, vector_store, prompt_template, ap
 
 file_names = list(DOCUMENTOS_PRE_CARREGADOS.keys())
 if not file_names:
-    st.warning("Nenhum documento pré-carregado. Por favor, adicione arquivos à lista `DOCUMENTOS_PRE_CARREGADOS`.")
+    st.warning("Nenhum documento pré-carregado. Por favor, adicione arquivos à lista `DOCUMENTOS_PRE_CARREGADOS` no código.")
 else:
     selected_file_name_display = st.selectbox("Escolha o assunto sobre o qual você quer conversar:", file_names)
     selected_file_path = DOCUMENTOS_PRE_CARREGADOS[selected_file_name_display]
@@ -157,17 +206,13 @@ else:
     if selected_file_name_display in PROMPTS_POR_DOCUMENTO:
         prompt_base = PROMPTS_POR_DOCUMENTO[selected_file_name_display]
     else:
-        st.error("Erro: Não foi encontrado um prompt personalizado para este documento.")
-        prompt_base = "Responda a pergunta do usuário com base nos seguintes trechos do documento: {conteudo_do_documento}. Pergunta: {pergunta_usuario}"
+        st.error("Erro: Não foi encontrado um prompt personalizado para este documento. Usando prompt padrão.")
+        prompt_base = "Responda a pergunta do usuário com base no seguinte documento: {conteudo_do_documento}. Pergunta: {pergunta_usuario}"
     
-    # Cria o vector store e o armazena no estado da sessão
-    if "vector_store" not in st.session_state or st.session_state.vector_store_name != selected_file_name_display:
-        with st.spinner(f"Carregando e processando '{selected_file_name_display}'..."):
-            st.session_state.vector_store = create_vector_store(selected_file_path)
-            st.session_state.vector_store_name = selected_file_name_display
-    
-    if st.session_state.vector_store:
-        st.success(f"Documento '{selected_file_name_display}' pronto!")
+    DOCUMENTO_CONTEUDO = carregar_documento_do_disco(selected_file_path)
+
+    if DOCUMENTO_CONTEUDO:
+        st.success(f"Documento '{selected_file_name_display}' carregado com sucesso!")
         
         if "messages" not in st.session_state:
             st.session_state.messages = []
@@ -185,13 +230,14 @@ else:
             with st.chat_message("assistant"):
                 with st.spinner("Buscando a resposta..."):
                     api_key = get_api_key()
-                    if api_key and st.session_state.vector_store:
-                        resposta = answer_from_document_rag(
-                            pergunta_usuario,
-                            st.session_state.vector_store,
-                            prompt_base,
-                            api_key
+                    if api_key and DOCUMENTO_CONTEUDO:
+                        prompt_completo = prompt_base.format(
+                            historico_da_conversa=st.session_state.messages,
+                            conteudo_do_documento=DOCUMENTO_CONTEUDO,
+                            pergunta_usuario=pergunta_usuario
                         )
+                        
+                        resposta = answer_from_document(prompt_completo, api_key)
                         st.markdown(resposta)
             
                         st.session_state.messages.append({"role": "assistant", "content": resposta})
