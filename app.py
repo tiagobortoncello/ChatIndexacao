@@ -47,20 +47,28 @@ PROMPTS_POR_DOCUMENTO = {
     Indexação.
     
     ---
-    **REGRA OBRIGATÓRIA E FORMATO DE RESPOSTA:**
+    **REGRA OBRIGATÓRIA E EXEMPLO DE FORMATO DE RESPOSTA:**
+
+    Sua resposta deve seguir o formato exato deste exemplo.
+
+    **Exemplo de Formato da Resposta:**
+    Termos de Indexação:
+    [Termo 1]
+    [Termo 2]
     
-    A sua resposta deve seguir este formato exato, buscando as informações no documento.
+    É necessário resumo.
+    Exemplo de resumo: [Conteúdo do Exemplo]
     
-    **Termos de Indexação:**
-    [Liste cada termo em uma nova linha. Garanta a quebra de linha entre os termos.]
+    Você pode verificar a informação na página [cite a página] do Manual de Indexação.
     
-    **Regra para o Resumo:**
-    - Se a coluna à direita do campo 'Resumo:' na tabela contiver um exemplo de texto, a resposta deve ser:
-      "É necessário resumo.
-      Exemplo de resumo: [exemplo do manual]."
+    ---
+
+    **Instruções para a sua resposta:**
     
-    - Se a coluna à direita do campo 'Resumo:' na tabela contiver o símbolo '#', a resposta deve ser:
-      "Não é necessário resumo para este tipo de documento."
+    - Liste cada termo de indexação em uma nova linha, após o cabeçalho "Termos de Indexação:".
+    - Verifique a tabela no documento para a regra do resumo.
+    - Se a coluna de resumo tiver um exemplo, use o formato "É necessário resumo." seguido, na linha de baixo, por "Exemplo de resumo: [Conteúdo do Exemplo]".
+    - Se a coluna de resumo tiver um '#', use o formato "Não é necessário resumo para este tipo de documento."
     
     ---
     
@@ -82,7 +90,7 @@ PROMPTS_POR_DOCUMENTO = {
     Documento:
     {conteudo_do_documento}
     ---
-    Pergunta: {pergunta_usuario}
+    Perguntat: {pergunta_usuario}
     """,
 
     "Regimento Interno da ALMG": """
