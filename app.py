@@ -48,7 +48,7 @@ PROMPTS_POR_DOCUMENTO = {
     
     O documento está estruturado em seções. Os exemplos vêm dentro de
     quadros. Você deve sugerir os termos de indexação conforme os
-    exemplos, usando somente os termos mais específicos.
+    exemplos, usando somente os termos mais específicos. **Apresente cada termo em uma nova linha.**
     
     ---
     **REGRA OBRIGATÓRIA SOBRE RESUMO:**
