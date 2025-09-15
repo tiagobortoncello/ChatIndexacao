@@ -52,14 +52,15 @@ PROMPTS_POR_DOCUMENTO = {
     A sua resposta deve seguir este formato exato, buscando as informações no documento.
     
     **Termos de Indexação:**
-    [Liste cada termo em uma nova linha, conforme os exemplos do manual.]
+    [Liste cada termo em uma nova linha. Garanta a quebra de linha entre os termos.]
     
-    **Resumo:**
-    [Verifique o campo 'Resumo:' na tabela do manual para determinar a regra.]
+    **Regra para o Resumo:**
+    - Se a coluna à direita do campo 'Resumo:' na tabela contiver um exemplo de texto, a resposta deve ser:
+      "É necessário resumo.
+      Exemplo de resumo: [exemplo do manual]."
     
-    **Regra para o campo Resumo:**
-    - Se a coluna à direita do campo 'Resumo:' na tabela contiver um exemplo de texto, informe: "É necessário resumo. Exemplo: [exemplo do manual]."
-    - Se a coluna à direita do campo 'Resumo:' na tabela contiver o símbolo '#', informe: "Não é necessário resumo para este tipo de documento."
+    - Se a coluna à direita do campo 'Resumo:' na tabela contiver o símbolo '#', a resposta deve ser:
+      "Não é necessário resumo para este tipo de documento."
     
     ---
     
