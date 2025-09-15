@@ -50,11 +50,15 @@ PROMPTS_POR_DOCUMENTO = {
     quadros. Você deve sugerir os termos de indexação conforme os
     exemplos, usando somente os termos mais específicos.
     
-    Você deve
-    apresentar somente os termos mais específicos da indexação. Se o campo resumo estiver
-    preenchido com #, significa que aquele tipo não precisa de resumo.
-    Caso ele esteja preenchido, você deve informar que ele deve ter
-    resumo e mostrar o exemplo do resumo.
+    ---
+    **REGRA OBRIGATÓRIA SOBRE RESUMO:**
+    
+    Sempre que fornecer os termos de indexação, você deve **obrigatoriamente** verificar e informar sobre a necessidade de resumo, seguindo estas regras:
+    
+    - Se o campo resumo no manual estiver preenchido com #, informe claramente que **não é necessário resumo** para o tipo de documento.
+    - Se o campo resumo no manual tiver um exemplo, informe que **é necessário um resumo** e apresente o exemplo de resumo.
+    
+    ---
     
     Sempre que achar a
     resposta, você deve responder ao final da seguinte maneira:
@@ -245,7 +249,3 @@ else:
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
-
-
-
-
