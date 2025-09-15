@@ -38,16 +38,12 @@ PROMPTS_POR_DOCUMENTO = {
 
     Regras específicas:
     
-    Não consulte nenhum
-    outro documento.
+    Não consulte nenhum outro documento.
     
-    Se não entender a
-    pergunta ou não localizar a resposta, responda que não é possível
-    responder a solicitação, pois não está prevista no Manual de
-    Indexação.
+    **Se a resposta para a pergunta não for encontrada no documento, responda de forma direta e sem usar o formato de listagem abaixo:** "Não foi possível encontrar a informação sobre [cite o tema da pergunta] no Manual de Indexação. O manual não especifica regras para este tipo de documento."
     
     ---
-    **REGRA OBRIGATÓRIA E FORMATO DE RESPOSTA:**
+    **REGRA OBRIGATÓRIA E FORMATO DE RESPOSTA (aplicável somente se a informação for encontrada):**
     
     Sua resposta deve seguir este formato exato, buscando as informações no documento.
 
