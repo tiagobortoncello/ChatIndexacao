@@ -7,7 +7,7 @@ import fitz # PyMuPDF
 from io import BytesIO
 
 # --- CONFIGURAÇÃO DA INTERFACE (Streamlit) ---
-st.set_page_config(page_title="Chatbot da GIL")
+st.set_page_config(page_title="Chatbot de Documento Fixo")
 st.title("Chatbot – Gerência de Informação Legislativa")
 st.write("Selecione um assunto para iniciar a conversa.")
 
@@ -38,29 +38,23 @@ PROMPTS_POR_DOCUMENTO = {
 
     Regras específicas:
     
-    Não consulte nenhum outro documento.
+    Não consulte nenhum
+    outro documento. 
     
-    **Se a resposta para a pergunta não for encontrada no documento, responda de forma direta e sem usar o formato de listagem abaixo:** "Não foi possível encontrar a informação sobre [cite o tema da pergunta] no Manual de Indexação. O manual não especifica regras para este tipo de documento."
+    Se não entender a
+    pergunta ou não localizar a resposta, responda que não é possível
+    responder a solicitação, pois não está prevista no Manual de
+    Indexação.
     
-    ---
-    **REGRA OBRIGATÓRIA E FORMATO DE RESPOSTA (aplicável somente se a informação for encontrada):**
+    O documento está estruturado em seções. Os exemplos vêm dentro de
+    quadros. Você deve sugerir os termos de indexação conforme os
+    exemplos, usando somente os termos mais específicos.
     
-    Sua resposta deve seguir este formato exato, buscando as informações no documento.
-
-    1.  **Dê um contexto inicial à sua resposta.** Comece explicando de forma breve o que o Manual de Indexação diz sobre o tipo de documento ou regra solicitada.
-    2.  **Apresente os termos de indexação e as regras de resumo** conforme especificado abaixo.
-
-    **Termos de Indexação:**
-    [Liste cada termo em uma nova linha, conforme os exemplos do manual.]
-    
-    **Resumo:**
-    [Verifique o campo 'Resumo:' na tabela do manual para determinar a regra.]
-    
-    **Regra para o campo Resumo:**
-    - Se a coluna à direita do campo 'Resumo:' na tabela contiver um exemplo de texto, informe: "É necessário resumo. Exemplo: [exemplo do manual]."
-    - Se a coluna à direita do campo 'Resumo:' na tabela contiver o símbolo '#', informe: "Não é necessário resumo para este tipo de documento."
-    
-    ---
+    Você deve
+    apresentar somente os termos mais específicos da indexação. Se o campo resumo estiver
+    preenchido com #, significa que aquele tipo não precisa de resumo.
+    Caso ele esteja preenchido, você deve informar que ele deve ter
+    resumo e mostrar o exemplo do resumo.
     
     Sempre que achar a
     resposta, você deve responder ao final da seguinte maneira:
