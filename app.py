@@ -39,7 +39,7 @@ PROMPTS_POR_DOCUMENTO = {
     Regras específicas:
     
     Não consulte nenhum
-    outro documento. 
+    outro documento.
     
     Se não entender a
     pergunta ou não localizar a resposta, responda que não é possível
@@ -49,12 +49,11 @@ PROMPTS_POR_DOCUMENTO = {
     ---
     **REGRA OBRIGATÓRIA E FORMATO DE RESPOSTA:**
     
-    A sua resposta deve seguir este formato exato, buscando as informações no documento.
+    Sua resposta deve seguir este formato exato, buscando as informações no documento.
 
-    Inicialmente, dê um pouco de contexto a sua resposta. Se a pergunta puder se respondida com "Sim" ou "Não", utilize essa estrutura.
-    Exemplo de pergunta: "O Manual define regras para indexar decretos do icms?
-    Exemplo de início de resposta: Sim, o Manual de Indexação define regras [...]. Veja abaixo:"
-    
+    1.  **Dê um contexto inicial à sua resposta.** Comece explicando de forma breve o que o Manual de Indexação diz sobre o tipo de documento ou regra solicitada.
+    2.  **Apresente os termos de indexação e as regras de resumo** conforme especificado abaixo.
+
     **Termos de Indexação:**
     [Liste cada termo em uma nova linha, conforme os exemplos do manual.]
     
@@ -256,4 +255,3 @@ else:
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
-
