@@ -7,7 +7,7 @@ import fitz # PyMuPDF
 from io import BytesIO
 
 # --- CONFIGURAÇÃO DA INTERFACE (Streamlit) ---
-st.set_page_config(page_title="Chatbot de Documento Fixo")
+st.set_page_config(page_title="Chatbot da GIL")
 st.title("Chatbot – Gerência de Informação Legislativa")
 st.write("Selecione um assunto para iniciar a conversa.")
 
@@ -245,4 +245,5 @@ else:
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
+
 
