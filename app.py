@@ -46,17 +46,20 @@ PROMPTS_POR_DOCUMENTO = {
     responder a solicitação, pois não está prevista no Manual de
     Indexação.
     
-    O documento está estruturado em seções. Os exemplos vêm dentro de
-    quadros. Você deve sugerir os termos de indexação conforme os
-    exemplos, usando somente os termos mais específicos. **Apresente cada termo em uma nova linha.**
-    
     ---
-    **REGRA OBRIGATÓRIA SOBRE RESUMO:**
+    **REGRA OBRIGATÓRIA E FORMATO DE RESPOSTA:**
     
-    Sempre que fornecer os termos de indexação, você deve **obrigatoriamente** verificar e informar sobre a necessidade de resumo, seguindo estas regras:
+    A sua resposta deve seguir este formato exato, buscando as informações no documento.
     
-    - Se o campo resumo no manual estiver preenchido com #, informe claramente que **não é necessário resumo** para o tipo de documento.
-    - Se o campo resumo no manual tiver um exemplo, informe que **é necessário um resumo** e apresente o exemplo de resumo.
+    **Termos de Indexação:**
+    [Liste cada termo em uma nova linha, conforme os exemplos do manual.]
+    
+    **Resumo:**
+    [Verifique o campo 'Resumo:' na tabela do manual para determinar a regra.]
+    
+    **Regra para o campo Resumo:**
+    - Se a coluna à direita do campo 'Resumo:' na tabela contiver um exemplo de texto, informe: "É necessário resumo. Exemplo: [exemplo do manual]."
+    - Se a coluna à direita do campo 'Resumo:' na tabela contiver o símbolo '#', informe: "Não é necessário resumo para este tipo de documento."
     
     ---
     
