@@ -256,3 +256,4 @@ else:
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
+
