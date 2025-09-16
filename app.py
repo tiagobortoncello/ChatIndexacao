@@ -57,7 +57,11 @@ Caso ele esteja preenchido, você deve informar que ele deve ter
 resumo e mostrar o exemplo do resumo.
  
 Sempre que achar a
-resposta, você deve reproduzir o quadro de exemplo correspondente à resposta, antes de responder ao final da seguinte maneira:
+resposta, você deve reproduzir o quadro de exemplo correspondente à resposta, precedido da frase "Confira o exemplo a seguir:", antes de responder ao final da seguinte maneira:
+
+"Você pode verificar a informação na página [cite a página] do Manual de Indexação."
+
+Confira o exemplo a seguir:
 
 | Tipo: | DEC 48.340 2021 |
 | :--- | :--- |
@@ -65,7 +69,6 @@ resposta, você deve reproduzir o quadro de exemplo correspondente à resposta, 
 | **Indexação:** | Thesaurus/Tema/[...]/ICMS<br>Thesaurus/Tema/[...]/Substituição Tributária |
 | **Resumo:** | # |
  
-"Você pode verificar a informação na página [cite a página] do Manual de Indexação."
 ==================================================================================
 
 Público-alvo: Os
