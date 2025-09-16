@@ -135,7 +135,30 @@ Documento:
 ---
 Pergunta: {pergunta_usuario}
 """,
-     
+    
+    "Manual de redação parlamentar": """
+Personalização da IA:
+Você é um assistente especializado no Manual de Redação Parlamentar da Assembleia Legislativa de Minas Gerais.
+Sua única fonte de informação é o documento "manual_redacao.pdf".
+
+====================================================================
+
+Regras de Resposta:
+- Responda de forma objetiva, formal e clara.
+- Se a informação não estiver no documento, responda: "A informação não foi encontrada no documento."
+- Para cada resposta, forneça uma explicação detalhada, destrinchando o processo e as regras relacionadas. Sempre que possível, cite as seções, capítulos e exemplos relevantes do Manual de Redação.
+- Sempre cite a fonte da sua resposta. A fonte deve ser a página onde a informação foi encontrada no documento, no seguinte formato: "Você pode verificar a informação na página [cite a página] do Manual de redação parlamentar."
+
+---
+Histórico da Conversa:
+{historico_da_conversa}
+---
+Documento:
+{conteudo_do_documento}
+---
+Pergunta: {pergunta_usuario}
+""",
+      
     # Adicione mais prompts personalizados aqui, mapeando ao nome de cada documento.
 }
 
@@ -148,9 +171,9 @@ def carregar_documento_do_disco(caminho_arquivo):
     if not os.path.exists(caminho_arquivo):
         st.error(f"Erro: O arquivo '{caminho_arquivo}' não foi encontrado.")
         return None
-     
+      
     extensao = os.path.splitext(caminho_arquivo)[1].lower()
-     
+      
     try:
         if extensao == ".txt":
             with open(caminho_arquivo, 'r', encoding='utf-8') as f:
@@ -188,7 +211,7 @@ def answer_from_document(prompt_completo, api_key):
     """
     if not api_key:
         return "Erro: Chave de API ausente."
-     
+      
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
 
     payload = {
@@ -199,7 +222,7 @@ def answer_from_document(prompt_completo, api_key):
         response = requests.post(url, json=payload)
         response.raise_for_status()
         result = response.json()
-         
+          
         resposta = result.get("candidates", [])[0].get("content", {}).get("parts", [])[0].get("text", "Não foi possível gerar a resposta.")
         return resposta
     except requests.exceptions.HTTPError as http_err:
@@ -215,18 +238,18 @@ if not file_names:
 else:
     selected_file_name_display = st.selectbox("Escolha o assunto sobre o qual você quer conversar:", file_names)
     selected_file_path = DOCUMENTOS_PRE_CARREGADOS[selected_file_name_display]
-     
+      
     if selected_file_name_display in PROMPTS_POR_DOCUMENTO:
         prompt_base = PROMPTS_POR_DOCUMENTO[selected_file_name_display]
     else:
         st.error("Erro: Não foi encontrado um prompt personalizado para este documento. Usando prompt padrão.")
         prompt_base = "Responda a pergunta do usuário com base no seguinte documento: {conteudo_do_documento}. Pergunta: {pergunta_usuario}"
-     
+      
     DOCUMENTO_CONTEUDO = carregar_documento_do_disco(selected_file_path)
 
     if DOCUMENTO_CONTEUDO:
         st.success(f"Documento '{selected_file_name_display}' carregado com sucesso!")
-         
+          
         if "messages" not in st.session_state:
             st.session_state.messages = []
 
@@ -236,7 +259,7 @@ else:
 
         if pergunta_usuario := st.chat_input("Faça sua pergunta:"):
             st.session_state.messages.append({"role": "user", "content": pergunta_usuario})
-             
+              
             with st.chat_message("user"):
                 st.markdown(pergunta_usuario)
 
@@ -249,13 +272,12 @@ else:
                             conteudo_do_documento=DOCUMENTO_CONTEUDO,
                             pergunta_usuario=pergunta_usuario
                         )
-                         
+                          
                         resposta = answer_from_document(prompt_completo, api_key)
                         st.markdown(resposta)
-                 
+                      
                         st.session_state.messages.append({"role": "assistant", "content": resposta})
 
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
-
