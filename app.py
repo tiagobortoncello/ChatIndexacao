@@ -68,7 +68,8 @@ Confira o exemplo a seguir:
 | Tipo: | DEC 48.340 2021 |
 | :--- | :--- |
 | **Ementa:** | Altera o Decreto nº 48.589, de 22 de março de 2023, que regulamenta o Imposto sobre Operações relativas à Circulação de Mercadorias e sobre Prestações de Serviços de Transporte Interestadual e Intermunicipal e de Comunicação – ICMS. |
-| **Indexação:** | Thesaurus/Tema/[...]/ICMS<br>Thesaurus/Tema/[...]/Substituição Tributária |
+| **Indexação:** | Thesaurus/Tema/[...]/ICMS \\
+Thesaurus/Tema/[...]/Substituição Tributária |
 | **Resumo:** | # |
  
 ==================================================================================
