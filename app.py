@@ -16,6 +16,7 @@ DOCUMENTOS_PRE_CARREGADOS = {
     "Manual de Indexação": "manual_indexacao.pdf",
     "Regimento Interno da ALMG": "regimento.pdf",
     "Constituição Estadual": "constituicao.pdf",
+    "Manual de redação parlamentar": "manual_redacao.pdf",
     # Adicione mais documentos aqui, seguindo o formato "Nome Exibido": "nome_do_arquivo.extensão"
 }
 
@@ -257,3 +258,4 @@ else:
     if st.button("Limpar Chat"):
         st.session_state.messages = []
         st.rerun()
+
